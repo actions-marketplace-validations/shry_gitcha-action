@@ -21,3 +21,5 @@ jobs:
       # Use the output from the `hello` step
       - name: Test with pytest
         run: poetry run pytest
+        env:
+          OPENAI_API_KEY: not-so-secret
