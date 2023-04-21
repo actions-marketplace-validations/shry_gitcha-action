@@ -5,11 +5,11 @@ This Github Action generates a OpenAI generated letter of application based on t
 ## Idea
 
 A lot of people are using a git repo for managing there CV files, job history, certificates etc. 
-Why not combine your CV repo with the power of (Open)AI.
+Why not combine your CV repo with the power of (Open)AI?
 
 ## Usage
 
-To use this action, you must have a git repository with at least some files with personal information of you. 
+To use this action, you need a git repository with at least some files with personal information of you. 
 For GitHub we recommend you use the `release` workflow:
 
 1. When you have found an interessting job position: Create a new release
@@ -73,20 +73,17 @@ gitcha_job:
       issues: write
       pull-requests: write
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v3
-      - name: AI Generator
+      - name: Gitcha Action
         uses: ./ # Uses an action in the root directory
-        id: cv
+        id: gitcha
         with:
           open-ai-key: ${{ secrets.OPENAI_API_KEY }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Use the output from the `hello` step
       - name: Your letter of application
-        run: echo "${{ steps.cv.outputs.application }}"
+        run: echo "${{ steps.gitcha.outputs.application }}"
 
 ```
 

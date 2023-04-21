@@ -5,8 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Basic test
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install poetry
@@ -18,8 +16,8 @@ jobs:
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
-      # Use the output from the `hello` step
       - name: Test with pytest
         run: poetry run pytest
         env:
           OPENAI_API_KEY: not-so-secret
+  # 2do: deploy to container registry

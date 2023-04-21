@@ -137,20 +137,35 @@ class LetterOfApplication:
             self.llm, chain_type='map_reduce', verbose=True)
         return chain.run(docs)
 
+    def _get_repo_release(self):
+        """
+        Get a GitHub release based on the tag name of the workflow release event
+        """
+        if self.repo.release:
+            return self.repo.release
+
+        if not self.repo.ref or not self.repo.ref.startswith('refs/tags/'):
+            raise ValueError('Git ref is not provided or not a tag')
+
+        tag_name = self.repo.ref.removeprefix('refs/tags/')
+
+        self.repo.release = self.get_lazy_repo().get_release(id=tag_name)
+        return self.repo.release
+
     def _get_job_source_from_release(self) -> tuple[str, str]:
         """
         Get the job posting from the release
         """
 
-        self.repo.release = self.get_lazy_repo().get_latest_release()
-        job_desc = self.repo.release.body if self.repo.release.body else ''
+        release = self._get_repo_release()
+        job_desc = release.body if release.body else ''
 
         if job_desc:
             metadata, job_desc = frontmatter.parse(job_desc)
             if metadata.get('prompt'):
                 self.add_prompt = metadata.get('prompt')
 
-        return (self.repo.release.title, job_desc)
+        return (release.title, job_desc)
 
     def _get_job_source_from_folder(self) -> list[tuple[str, str, str]]:
         """
@@ -208,7 +223,7 @@ class LetterOfApplication:
         if self.git_provider == 'local':
             return
 
-        release = self.repo.release if self.repo.release else self.get_lazy_repo().get_latest_release()
+        release = self._get_repo_release()
 
         asset = release.upload_asset(
             letter_path, label='Letter of application', content_type='text/markdown')
