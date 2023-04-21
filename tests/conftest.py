@@ -21,25 +21,6 @@ def setup_envs():
     load_dotenv(dotenv_path=os.path.join(ROOT_PATH, '.env'))
 
 
-@pytest.fixture
-def letter_class():
-    """Return a letter of application class
-    """
-
-    test_repo = os.path.join(Path(__file__).resolve(
-        strict=True).parent.parent, 'test-repo')
-
-    test_app = LetterOfApplication(
-        git_provider='local',
-        repo=RepoConfig(
-            path=test_repo,
-            name='test/repo'
-        )
-    )
-
-    return test_app
-
-
 @pytest.fixture(name='gitcha_yaml')
 def basic_gitcha_yaml():
     """
@@ -62,7 +43,7 @@ def basic_gitcha_yaml():
     )
 
 
-@pytest.fixture
+@pytest.fixture(name='tmp_repo_folder')
 def repo_tmp(tmp_path, gitcha_yaml):
     """Create a default repo structure
     """
@@ -80,3 +61,19 @@ def repo_tmp(tmp_path, gitcha_yaml):
     posting.write_text('---\ntitle: job title\n---\njob desc')
 
     return tmp_path
+
+
+@pytest.fixture
+def letter_class(tmp_repo_folder):
+    """Return a letter of application class
+    """
+
+    test_app = LetterOfApplication(
+        git_provider='local',
+        repo=RepoConfig(
+            path=str(tmp_repo_folder),
+            name='test/repo'
+        )
+    )
+
+    return test_app

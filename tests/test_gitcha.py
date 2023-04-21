@@ -25,7 +25,7 @@ def test_wrong_provider():
     assert 'Wrong git provider' in str(excinfo.value)
 
 
-def test_job_source_folder(letter_class: LetterOfApplication, repo_tmp, monkeypatch):
+def test_job_source_folder(letter_class: LetterOfApplication, tmp_repo_folder, monkeypatch):
     """
     Test job source as folder
     """
@@ -33,23 +33,19 @@ def test_job_source_folder(letter_class: LetterOfApplication, repo_tmp, monkeypa
     monkeypatch.setattr(LetterOfApplication, 'generate_letter_of_application_chat',
                         lambda *args, **kwargs: 'summary', raising=True)
 
-    letter_class.repo.path = str(repo_tmp)
-
     letter_class.create_letter_of_application(job_source='folder', stdout=True)
 
-    with open(repo_tmp / 'job_postings' / 'test.md', encoding='utf-8') as file:
+    with open(tmp_repo_folder / 'job_postings' / 'test.md', encoding='utf-8') as file:
         assert file.read() == '---\ncreated: true\ntitle: job title\n---\n\njob desc\n\n---\n\nsummary'
 
 
-def test_job_source_folder_return(letter_class: LetterOfApplication, repo_tmp, monkeypatch):
+def test_job_source_folder_return(letter_class: LetterOfApplication, monkeypatch):
     """
     Test return output
     """
 
     monkeypatch.setattr(LetterOfApplication, 'generate_letter_of_application_chat',
                         lambda *args, **kwargs: 'summary', raising=True)
-
-    letter_class.repo.path = str(repo_tmp)
 
     summary = letter_class.create_letter_of_application(
         job_source='folder', stdout=False)
