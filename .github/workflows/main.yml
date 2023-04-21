@@ -1,32 +1,21 @@
-on: 
-  release:
-    types: [published]
-#on:
-#  push:
-#    paths:
-#      - 'job_postings/**'
+on: [push]
 
 jobs:
-  gitcha_job:
+  testing:
     runs-on: ubuntu-latest
-    name: Create letter of application
-    permissions:
-      contents: write
-      packages: read
-      issues: write
-      pull-requests: write
+    name: Basic test
     steps:
       # To use this repository's private action,
       # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v3
-      - name: AI Generator
-        uses: ./ # Uses an action in the root directory
-        id: cv
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
         with:
-          open-ai-key: ${{ secrets.OPENAI_API_KEY }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
+          python-version: 3.9
+      - name: Install dependencies
+        run: poetry install
       # Use the output from the `hello` step
-      - name: Your letter of application
-        run: echo "${{ steps.cv.outputs.application }}"
+      - name: Test with pytest
+        run: |
+          pytest
