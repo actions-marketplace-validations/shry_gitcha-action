@@ -9,13 +9,15 @@ jobs:
       # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.9'
+          cache: 'poetry'
       - name: Install dependencies
         run: poetry install
       # Use the output from the `hello` step
       - name: Test with pytest
-        run: |
-          pytest
+        run: poetry run pytest
