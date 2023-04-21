@@ -1,4 +1,7 @@
 name: 'Letter of application'
+branding:
+  icon: 'edit'
+  color: 'green'
 description: 'Create a letter of application out of all the valid repo files'
 inputs:
   repo-token:
