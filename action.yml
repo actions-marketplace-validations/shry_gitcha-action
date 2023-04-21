@@ -1,0 +1,20 @@
+name: 'Letter of application'
+description: 'Create a letter of application out of all the valid repo files'
+inputs:
+  repo-token:
+    description: 'GitHub repo token'
+    required: true
+  open-ai-key: 
+    description: 'Secret key of OpenAI API'
+    required: true
+
+outputs:
+  application: # id of output
+    description: 'The job application you want '
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    OPENAI_API_KEY: ${{ inputs.open-ai-key }}
+    GIT_PROVIDER_API_TOKEN: ${{ inputs.repo-token }}
+    GIT_PROVIDER: github
