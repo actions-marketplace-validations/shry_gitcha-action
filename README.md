@@ -50,12 +50,12 @@ If you want to change the output language of your letter of applications, change
 
 ## Template
 
-The easiest way is to use the gitcha template under: 
+The easiest way to start is to use the gitcha template under: 
 
 
 ## Workflow for an existing repo
 
-If you want to add the GitHub action to an existing repo, you have to add some yaml to your workflows:
+If you want to add the GitHub action to an existing repo, you have to add new workflow file in `.github/workflows/`:
 
 ```yaml
 name: Generate Letter of Application
@@ -70,7 +70,6 @@ jobs:
     name: Create letter of application
     permissions:
       contents: write
-      packages: read
       issues: write
       pull-requests: write
     steps:
