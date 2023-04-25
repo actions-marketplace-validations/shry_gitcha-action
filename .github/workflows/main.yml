@@ -20,4 +20,3 @@ jobs:
         run: poetry run pytest
         env:
           OPENAI_API_KEY: not-so-secret
-  # 2do: deploy to container registry
