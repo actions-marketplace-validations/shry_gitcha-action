@@ -23,7 +23,7 @@ Create automatically a *letter of application* for a job:
 
 ## Config
 
-In order to optimize the AI generated letter, we need a config file called `.gitcha.yml` in your root folder. 
+In order to optimize the AI generated answers, we need a config file called `.gitcha.yml` in your root folder. 
 
 ```yaml
 given_name: Bill # Only required field 
@@ -38,7 +38,7 @@ config:
 #  projects_folder: /projects
 ```
 
-To prevent wrong data injection gitcha only searchs for informations in:
+To prevent wrong data injection gitcha only searches for informations in:
 
 * README.md
 * `/public` - [config.public_folder]: All public files you want to distribute along your letter
@@ -46,12 +46,12 @@ To prevent wrong data injection gitcha only searchs for informations in:
 * `/certs` - [config.certs_folder]: Certificats you have earned
 * `/projects` - [config.projects_folder]: Interessting projects to know 
 
-INFO: Don't forget to add a GitHub action secret for the OpenAI API-Key called: `OPENAI_API_KEY`
+*INFO:* Don't forget to add a GitHub action secret for the OpenAI API-Key called: `OPENAI_API_KEY`
 
 
 ### Language
 
-If you want to change the output language of your letter of applications, change the variable  `config.output_lang` in your `.gitcha.yml`.
+If you want to customize the output language, you have to change the variable `config.output_lang` in your `.gitcha.yml`.
 
 
 ## Template
@@ -61,12 +61,12 @@ The easiest way to start is to use the gitcha template under: [TBD]
 
 ## Workflow for an existing repo
 
-If you want to add the GitHub action to an existing repo, you have to add new workflow file in `.github/workflows/`.
+If you want to add the GitHub action to an existing repo, you have to add a new workflow file in `.github/workflows/`.
 
 ### Letter of application after new release
 
 ```yaml
-name: Generate Letter of Application
+name: Generate a letter of application
 
 on: 
   release:
@@ -79,7 +79,6 @@ jobs:
     permissions:
       contents: write
       issues: write
-      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3

@@ -13,7 +13,7 @@ inputs:
   action: 
     description: 'What kind of action: "letter-of-application" or "prompt"'
     required: true
-    default: 'letter-of-application'
+    default: 'prompt'
 
 outputs:
   answer: # id of output
