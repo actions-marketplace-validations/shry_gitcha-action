@@ -156,17 +156,6 @@ class GitchaGenerator:
         self.repo.release = self.get_lazy_repo().get_release(id=tag_name)
         return self.repo.release
 
-    def _get_job_source_from_release(self) -> tuple[str, str]:
-        """
-        Get the job posting from the release
-        DEPRECATED
-        """
-
-        release = self._get_repo_release()
-        job_desc = release.body if release.body else ''
-
-        return (release.title, job_desc)
-
     def _get_job_source_from_folder(self) -> list[tuple[str, str, Optional[str]]]:
         """
         Get the job from a specific folder
@@ -275,7 +264,7 @@ class GitchaGenerator:
         Prepare the basic chat prompt
         """
         return [SystemMessagePromptTemplate.from_template(
-            template='You are a personal job application assistant. The basic personal information of your client are the following: {personal_infos}'
+            template='You are a personal job application assistant. The basic personal information of your client are the following:\n{personal_infos}'
         ), ]
 
     def _execute_chat_prompt(self, messages: list[BaseMessage]) -> str:
@@ -400,8 +389,6 @@ class GitchaGenerator:
                 template=f'You should respond only in {self.repo.gitcha.config.output_lang.upper()}'
             ))
 
-        # prompts.append(HumanMessagePromptTemplate.from_template('How would you improve the prompt?'))
-
         chat_prompt = ChatPromptTemplate.from_messages(prompts)
 
         # Generate messages
@@ -444,7 +431,7 @@ class GitchaGenerator:
         with tempfile.TemporaryDirectory() as temp_dir:
             new_file_path = os.path.join(temp_dir, 'letter-of-application.md')
 
-            # Only for folder source can be more than one job_data
+            # Only in folders can be more than one job_data
             for data in job_data:
                 # Create the letter
                 letter_as_str = self.generate_letter_of_application_chat(
@@ -516,10 +503,12 @@ class GitchaGenerator:
 
         return self._execute_chat_prompt(messages)
 
-    def create_general_prompt(self, prompt_text: Optional[str] = None, stdout: bool = True) -> Optional[str]:
+    def answer(self, prompt_text: Optional[str] = None, stdout: bool = True) -> Optional[str]:
         """
-        Create a general prompt output
+        Execute a general prompt about the repo and return the answer
         """
+
+        print('Get an answer based on the summary of your repo files')
 
         prompt_text = os.environ.get('GITCHA_PROMPT', prompt_text)
 

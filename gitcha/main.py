@@ -64,7 +64,7 @@ if __name__ == '__main__':
                     'GITHUB_EVENT_NAME') == 'release')
             )
         else:
-            generator.create_general_prompt()
+            generator.answer()
     except GitchaGeneratorError as exc:
         logging.error(exc)
     except GitchaGeneratorWarning as exc:

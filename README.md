@@ -130,7 +130,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: prompt 
         env:
-          GITCHA_PROMPT: ${{ github.event.issue.title }}
+          GITCHA_PROMPT: '${{ github.event.issue.title }}'
           
       - name: Your prompt answer
         run: echo "${{ steps.gitcha.outputs.answer }}"

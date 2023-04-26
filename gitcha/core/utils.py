@@ -24,24 +24,6 @@ def normalize_path(path: str, folder_path: str) -> Path:
     return Path(os.path.join(path, folder_name))
 
 
-def guess_gitcha_source():
-    """
-    Guess the source we want to use based on the provided envs
-
-    DEPRECATED
-    """
-    if os.environ.get('GITHUB_EVENT_NAME') == 'release':
-        return 'release'
-
-    if os.environ.get('GITHUB_EVENT_NAME') == 'push':
-        return 'folder'
-
-    if os.environ.get('GITHUB_EVENT_NAME') == 'issue':
-        return 'issue'
-
-    return 'env'
-
-
 def parse_gitcha_file(root_path: str):
     """Parse the gitcha file and return
     """
@@ -65,33 +47,33 @@ def user_contact_infos(gitcha: GitchaYaml) -> str:
     """
     Return basic user contact information as string
     """
-    output = f'Full name: {gitcha.given_name} {gitcha.family_name}\n\n'
+    output = f'Full name: {gitcha.given_name} {gitcha.family_name}\n'
 
     if gitcha.birth_date:
-        output += f'Born: {gitcha.birth_date}\n\n'
+        output += f'Born: {gitcha.birth_date}\n'
 
     if gitcha.pronouns:
-        output += f'Pronouns: {gitcha.pronouns}\n\n'
+        output += f'Pronouns: {gitcha.pronouns}\n'
 
     if gitcha.knows_language:
         langs = ', '.join(gitcha.knows_language)
-        output += f'Speaks languages: {langs}\n\n'
+        output += f'Speaks languages: {langs}\n'
 
     if gitcha.knows_coding:
         coding = ', '.join(gitcha.knows_coding)
-        output += f'Knows following programming languages: {coding}\n\n'
+        output += f'Knows following programming languages: {coding}\n'
 
     if gitcha.nationality:
-        output += f'Nationality: {gitcha.nationality}\n\n'
+        output += f'Nationality: {gitcha.nationality}\n'
 
     if gitcha.highest_lvl_education:
-        output += f'Highest level of education: {gitcha.highest_lvl_education}\n\n'
+        output += f'Highest level of education: {gitcha.highest_lvl_education}\n'
 
     if gitcha.phone:
-        output += f'Phone number: {gitcha.phone}\n\n'
+        output += f'Phone number: {gitcha.phone}\n'
 
     if gitcha.email:
-        output += f'E-Mail: {gitcha.email}\n\n'
+        output += f'E-Mail: {gitcha.email}\n'
 
     if gitcha.address:
         output += f'Hometown address: {gitcha.address.street_address} {gitcha.address.city} {gitcha.address.country}'
