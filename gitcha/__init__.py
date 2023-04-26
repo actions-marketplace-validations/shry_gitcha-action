@@ -1,11 +1,11 @@
 """Main entrypoint into package."""
 
 
-from .core.generator import LetterOfApplication, RepoConfig
+from .core.generator import GitchaGenerator, RepoConfig
 from .core.schemas import GitchaYaml
 
 __all__ = [
-    'LetterOfApplication',
+    'GitchaGenerator',
     'RepoConfig',
     'GitchaYaml'
 ]

@@ -65,7 +65,7 @@ on:
     types: [published]
 
 jobs:
-  gitcha_job:
+  gitcha-job:
     runs-on: ubuntu-latest
     name: Create letter of application
     permissions:
@@ -81,14 +81,55 @@ jobs:
         with:
           open-ai-key: ${{ secrets.OPENAI_API_KEY }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          action: letter-of-application 
+        env:
+          JOB_TITLE: ${{ github.event.release.name }}
+          JOB_DESC: ${{ github.event.release.description }}
 
       - name: Your letter of application
-        run: echo "${{ steps.gitcha.outputs.application }}"
+        run: echo "${{ steps.gitcha.outputs.answer }}"
 
 ```
 
-Besides that you **need** to create a `.gitcha.yml` in your root folder.
+### Issue prompts
 
+You could also use gitcha to ask general questions based on a issue you open:
+
+```yaml
+name: Ask me anything
+
+on:
+  issues:
+    types:
+      - labeled
+
+jobs:
+  gitcha-job:
+    if: github.event.label.name == 'prompt'
+    runs-on: ubuntu-latest
+    name: Ask me anything
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Gitcha Action
+        uses: ./ # Uses an action in the root directory
+        id: gitcha
+        with:
+          open-ai-key: ${{ secrets.OPENAI_API_KEY }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          action: prompt 
+        env:
+          GITCHA_PROMPT: ${{ github.event.issue.title }}
+          
+      - name: Your prompt answer
+        run: echo "${{ steps.gitcha.outputs.answer }}"
+
+```
+
+
+Besides that you always **need** to create a `.gitcha.yml` in your root folder.
 
 ## Test locally
 

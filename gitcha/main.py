@@ -7,10 +7,8 @@ import pathlib
 
 from dotenv import load_dotenv
 
-from gitcha.core.generator import (LetterOfApplication,
-                                   LetterOfApplicationError,
-                                   LetterOfApplicationWarning, RepoConfig)
-from gitcha.core.utils import guess_job_source
+from gitcha.core.generator import (GitchaGenerator, GitchaGeneratorError,
+                                   GitchaGeneratorWarning, RepoConfig)
 
 load_dotenv()
 
@@ -35,10 +33,10 @@ REPO_PATH = os.environ.get(
 GIT_EVENT_REF = os.environ.get(
     'GITHUB_REF', os.environ.get('CI_COMMIT_REF_NAME'))
 
-# The type of workflow we want to use
-# Possible types are: 'release', 'folder', 'env
-GITCHA_JOB_SOURCE = os.environ.get(
-    'GITCHA_JOB_SOURCE', guess_job_source())
+# the type of action: 'letter-of-application', 'prompt'
+GITCHA_ACTION = os.environ.get(
+    'GITCHA_ACTION', 'letter-of-application')
+
 
 # The maximum token limit for the whole generation. This is experimental
 # -1 == no limit
@@ -48,7 +46,7 @@ MAX_TOKEN_LIMIT = os.environ.get(
 
 if __name__ == '__main__':
 
-    summarizer = LetterOfApplication(
+    generator = GitchaGenerator(
         git_provider=GIT_PROVIDER,
         repo=RepoConfig(
             path=REPO_PATH,
@@ -60,10 +58,14 @@ if __name__ == '__main__':
     )
 
     try:
-        summarizer.create_letter_of_application(
-            job_source=GITCHA_JOB_SOURCE
-        )
-    except LetterOfApplicationError as exc:
+        if GITCHA_ACTION == 'letter-of-application':
+            generator.create_letter_of_application(
+                create_release_assets=(os.environ.get(
+                    'GITHUB_EVENT_NAME') == 'release')
+            )
+        else:
+            generator.create_general_prompt()
+    except GitchaGeneratorError as exc:
         logging.error(exc)
-    except LetterOfApplicationWarning as exc:
+    except GitchaGeneratorWarning as exc:
         logging.warning(exc)

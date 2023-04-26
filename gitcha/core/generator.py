@@ -24,17 +24,17 @@ from .schemas import ParsedDocs, RepoConfig
 from .utils import normalize_path, parse_gitcha_file, user_contact_infos
 
 
-class LetterOfApplicationError(Exception):
-    """Letter of applications already exists"""
+class GitchaGeneratorError(Exception):
+    """generator error"""
 
 
-class LetterOfApplicationWarning(Exception):
-    """Letter of applications warning"""
+class GitchaGeneratorWarning(Exception):
+    """generator warning"""
 
 
-class LetterOfApplication:
+class GitchaGenerator:
     """
-    Creates a letter of application for a specific job 
+    Generates job specific texts with OpenAI 
     based on all your personal files in your git repository
 
     For a better structure we are using a config file called .gitcha.yaml
@@ -43,7 +43,7 @@ class LetterOfApplication:
 
     repo: RepoConfig
     git_provider: str
-    add_prompt: Optional[str] = None
+
     api: Optional[Github] = None
 
     docs = ParsedDocs()
@@ -56,7 +56,7 @@ class LetterOfApplication:
                  ) -> None:
 
         if git_provider not in ['github', 'gitlab', 'local']:
-            raise LetterOfApplicationError('Wrong git provider')
+            raise GitchaGeneratorError('Wrong git provider')
 
         if git_provider == 'gitlab':
             raise NotImplementedError('GitLab is currently not supported')
@@ -105,18 +105,18 @@ class LetterOfApplication:
         if self.git_provider == 'github':
 
             subprocess.run(';'.join([
-                f'GITCHA_APPLICATION=$(cat {file_path})',
+                f'GITCHA_ANSWER=$(cat {file_path})',
                 'EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)',
-                'echo "application<<$EOF" >> $GITHUB_OUTPUT',
-                'echo "$GITCHA_APPLICATION" >> $GITHUB_OUTPUT',
+                'echo "answer<<$EOF" >> $GITHUB_OUTPUT',
+                'echo "$GITCHA_ANSWER" >> $GITHUB_OUTPUT',
                 'echo "$EOF" >> $GITHUB_OUTPUT'
             ]), shell=True, check=False)
 
         else:
             subprocess.run(';'.join([
                 'echo "\n----- Result: -----\n"',
-                f'GITCHA_APPLICATION=$(cat {file_path})',
-                'echo "$GITCHA_APPLICATION"'
+                f'GITCHA_ANSWER=$(cat {file_path})',
+                'echo "$GITCHA_ANSWER"'
             ]), shell=True, check=False)
 
     def _summarize_text(self, text: str) -> str:
@@ -155,19 +155,15 @@ class LetterOfApplication:
     def _get_job_source_from_release(self) -> tuple[str, str]:
         """
         Get the job posting from the release
+        DEPRECATED
         """
 
         release = self._get_repo_release()
         job_desc = release.body if release.body else ''
 
-        if job_desc:
-            metadata, job_desc = frontmatter.parse(job_desc)
-            if metadata.get('prompt'):
-                self.add_prompt = metadata.get('prompt')
-
         return (release.title, job_desc)
 
-    def _get_job_source_from_folder(self) -> list[tuple[str, str, str]]:
+    def _get_job_source_from_folder(self) -> list[tuple[str, str, Optional[str]]]:
         """
         Get the job from a specific folder
         """
@@ -188,13 +184,13 @@ class LetterOfApplication:
                 continue
 
             if not title:
-                raise LetterOfApplicationError(
+                raise GitchaGeneratorError(
                     f'No title for the job posting under {file}')
 
             output.append((title, post.content, str(file)))
 
         if not output:
-            raise LetterOfApplicationWarning(
+            print(
                 f'No new job posting file in the {self._get_gitcha_config().job_posting_folder} folder')
 
         return output
@@ -270,6 +266,14 @@ class LetterOfApplication:
             body=message
         )
 
+    def _prepare_prompt(self):
+        """
+        Prepare the basic chat prompt
+        """
+        return [SystemMessagePromptTemplate.from_template(
+            template='You are a personal job application assistant. The basic personal information of your client are the following: {personal_infos}'
+        ), ]
+
     def check_max_token_limit(self, add: int = 0) -> int:
         """
         Simple prediction and check of the max token limit
@@ -282,7 +286,7 @@ class LetterOfApplication:
         counter += add
 
         if self.max_token_limit > 0 and counter > self.max_token_limit:
-            raise LetterOfApplicationWarning(
+            raise GitchaGeneratorWarning(
                 f'Max token limit reached {counter}/{self.max_token_limit}')
 
         return counter
@@ -308,7 +312,7 @@ class LetterOfApplication:
         docs = loader.load(gitcha=self.repo.gitcha)
 
         if not docs:
-            raise LetterOfApplicationWarning('No documents to scan')
+            raise GitchaGeneratorWarning('No documents to scan')
 
         self.docs.cv_files = docs
 
@@ -338,11 +342,7 @@ class LetterOfApplication:
         chat = ChatOpenAI(temperature=0.6, verbose=True,
                           max_tokens=1000)  # type: ignore
 
-        prompts = []
-
-        prompts.append(SystemMessagePromptTemplate.from_template(
-            template='You are a personal job application assistant. The basic personal information of your client are the following: {personal_infos}'
-        ))
+        prompts = self._prepare_prompt()
 
         human_template = """
         Draft a letter of application for a job with the title '{job_title}'. 
@@ -397,38 +397,33 @@ class LetterOfApplication:
         ai_resp = chat(messages=messages)
 
         if not ai_resp.content:
-            raise LetterOfApplicationWarning(
+            raise GitchaGeneratorWarning(
                 'AI could not generate a valid output')
 
         return ai_resp.content
 
-    def create_letter_of_application(self, job_source: str, stdout: bool = True) -> Optional[str]:
+    def create_letter_of_application(self, create_release_assets: bool, stdout: bool = True) -> Optional[str]:
         """
         Creates the letter of application in a temp directory as a Markdown file
 
         Args:
-            job_title_from (Literal[&#39;release&#39;, &#39;folder&#39;, &#39;env&#39;]): From where to get the job title
-            output (bool, optional): Output result. Defaults to True.
+            create_release_assets (bool): Create release assets from the output
+            stdout (bool, optional): Output result. Defaults to True.
         """
 
-        if job_source not in ['release', 'folder', 'env']:
-            raise ValueError('Job source is missing')
+        print('Create letter of application from the source files')
 
-        print(f'Create letter of application from a {job_source}')
+        job_data = self._get_job_source_from_folder()
 
-        if job_source == 'release':
-            job_data = [self._get_job_source_from_release(), ]
+        job_title, job_desc = os.environ.get(
+            'JOB_TITLE'), os.environ.get('JOB_DESC', '')
 
-        elif job_source == 'folder':
-            job_data = self._get_job_source_from_folder()
+        if job_title:
+            job_data.append((job_title, job_desc, None))
 
-        else:
-            job_title, job_desc = os.environ.get(
-                'JOB_TITLE', ''), os.environ.get('JOB_DESC', '')
-            job_data = [(job_title, job_desc), ]
-            if not job_title:
-                raise LetterOfApplicationError(
-                    'Please provide at least a JOB_TITLE environment variable')
+        if not job_data:
+            raise GitchaGeneratorError(
+                'Please provide at least a JOB_TITLE environment variable')
 
         return_output = None
 
@@ -450,11 +445,12 @@ class LetterOfApplication:
 
                     temp_file.write(letter_as_str)
 
-                if job_source == 'release':
-                    self._create_release_assets(new_file_path)
-                elif job_source == 'folder' and len(data) == 3:
+                # if a third value is provided, it is a file path
+                if data[2]:
                     self._update_folder_file(letter_as_str, data[2])
-                    # if last file
+
+            if create_release_assets:
+                self._create_release_assets(new_file_path)
 
             if stdout:
                 self._write_file_to_stdout(new_file_path)
@@ -464,26 +460,76 @@ class LetterOfApplication:
 
         return return_output
 
-    def my_chat(self):
-        """_summary_
+    def generate_general_prompt(self, prompt_text: str):
+        """
+        Ask a specific question based on the summary of your files
+        """
+        summary = self.summarize_files()
+
+        if not summary:
+            raise ValueError('No summary text')
+
+        if not self.repo.gitcha:
+            raise ValueError('No gitcha config')
+
+        chat = ChatOpenAI(temperature=0.6, verbose=True,
+                          max_tokens=1000)  # type: ignore
+
+        prompts = self._prepare_prompt()
+
+        human_template = """
+        My summarized curriculum vitae is:
+
+        {summary} 
+
+        ---
+
+        {prompt}
         """
 
-        chat = ChatOpenAI(temperature=0.6, verbose=True)  # type: ignore
-
-        prompts = []
-
-        prompts.append(SystemMessagePromptTemplate.from_template(
-            template='You are a copywriter assistant for a project called gitcha'
-
-        ))
-
         prompts.append(HumanMessagePromptTemplate.from_template(
-            ''
-        ))
+            human_template))
+
         chat_prompt = ChatPromptTemplate.from_messages(prompts)
 
-        messages = chat_prompt.format_prompt().to_messages()
+        # Generate messages
+        messages = chat_prompt.format_prompt(
+            personal_infos=user_contact_infos(self.repo.gitcha),
+            prompt=prompt_text,
+            summary=summary
+        ).to_messages()
 
+        # Generate output
         ai_resp = chat(messages=messages)
 
+        if not ai_resp.content:
+            raise GitchaGeneratorWarning(
+                'AI could not generate a valid output')
+
         return ai_resp.content
+
+    def create_general_prompt(self, prompt_text: Optional[str] = None, stdout: bool = True) -> Optional[str]:
+        """
+        Create a general prompt output
+        """
+
+        prompt_text = os.environ.get('GITCHA_PROMPT', prompt_text)
+
+        if not prompt_text:
+            raise GitchaGeneratorError(
+                'Please provide at least a GITCHA_PROMPT environment variable')
+
+        output = self.generate_general_prompt(prompt_text)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            new_file_path = os.path.join(temp_dir, 'output.md')
+            with open(new_file_path, 'w', encoding='utf-8') as temp_file:
+                temp_file.write(output)
+
+            if stdout:
+                self._write_file_to_stdout(new_file_path)
+
+        if not stdout:
+            return output
+
+        return None

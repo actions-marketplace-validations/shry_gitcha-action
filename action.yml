@@ -1,4 +1,4 @@
-name: 'Letter of application'
+name: 'Curriculum vitae'
 branding:
   icon: 'edit'
   color: 'green'
@@ -10,10 +10,15 @@ inputs:
   open-ai-key: 
     description: 'Secret key of OpenAI API'
     required: true
+  action: 
+    description: 'What kind of action: "letter-of-application" or "prompt"'
+    required: true
+    default: 'letter-of-application'
 
 outputs:
-  application: # id of output
-    description: 'The job application you want '
+  answer: # id of output
+    description: 'The generated answer'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -21,3 +26,4 @@ runs:
     OPENAI_API_KEY: ${{ inputs.open-ai-key }}
     GIT_PROVIDER_API_TOKEN: ${{ inputs.repo-token }}
     GIT_PROVIDER: github
+    GITCHA_ACTION: ${{ inputs.action }}

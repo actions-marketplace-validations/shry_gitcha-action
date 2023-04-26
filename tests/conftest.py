@@ -8,7 +8,7 @@ from textwrap import dedent
 import pytest
 from dotenv import load_dotenv
 
-from gitcha import LetterOfApplication, RepoConfig
+from gitcha import GitchaGenerator, RepoConfig
 
 ROOT_PATH = Path(__file__).resolve(strict=True).parent.parent
 
@@ -68,7 +68,7 @@ def letter_class(tmp_repo_folder):
     """Return a letter of application class
     """
 
-    test_app = LetterOfApplication(
+    test_app = GitchaGenerator(
         git_provider='local',
         repo=RepoConfig(
             path=str(tmp_repo_folder),

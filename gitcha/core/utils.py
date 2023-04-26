@@ -24,15 +24,20 @@ def normalize_path(path: str, folder_path: str) -> Path:
     return Path(os.path.join(path, folder_name))
 
 
-def guess_job_source():
+def guess_gitcha_source():
     """
-    Guess the workflow type based on the provided envs
+    Guess the source we want to use based on the provided envs
+
+    DEPRECATED
     """
     if os.environ.get('GITHUB_EVENT_NAME') == 'release':
         return 'release'
 
     if os.environ.get('GITHUB_EVENT_NAME') == 'push':
         return 'folder'
+
+    if os.environ.get('GITHUB_EVENT_NAME') == 'issue':
+        return 'issue'
 
     return 'env'
 
