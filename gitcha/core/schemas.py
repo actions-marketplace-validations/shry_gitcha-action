@@ -57,7 +57,7 @@ class Config(BaseModel):
     public_folder: Path = Field(default='/public',
                                 description='All files of the public folder will be transfered along a job application.'
                                 )
-    work_history_folder: Path = Field(default='/work_log',
+    work_history_folder: Path = Field(default='/work_history',
                                       description="""Provide for every job a seperate .md file in this folder."""
                                       )
     certificats_folder: str = Field(default='/certs')

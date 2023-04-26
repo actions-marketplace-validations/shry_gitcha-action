@@ -65,35 +65,35 @@ def user_contact_infos(gitcha: GitchaYaml) -> str:
     """
     Return basic user contact information as string
     """
-    output = f'Name: {gitcha.given_name} {gitcha.family_name}'
+    output = f'Full name: {gitcha.given_name} {gitcha.family_name}\n\n'
 
     if gitcha.birth_date:
-        output += f' (Born: {gitcha.birth_date})'
+        output += f'Born: {gitcha.birth_date}\n\n'
 
     if gitcha.pronouns:
-        output += f' | Pronouns: {gitcha.pronouns}'
+        output += f'Pronouns: {gitcha.pronouns}\n\n'
 
     if gitcha.knows_language:
         langs = ', '.join(gitcha.knows_language)
-        output += f' | Speaks languages: {langs}'
+        output += f'Speaks languages: {langs}\n\n'
 
     if gitcha.knows_coding:
         coding = ', '.join(gitcha.knows_coding)
-        output += f' | Knows following programming languages: {coding}'
+        output += f'Knows following programming languages: {coding}\n\n'
 
     if gitcha.nationality:
-        output += f' | Nationality: {gitcha.nationality}'
+        output += f'Nationality: {gitcha.nationality}\n\n'
 
     if gitcha.highest_lvl_education:
-        output += f' | Highest level of education: {gitcha.highest_lvl_education}'
+        output += f'Highest level of education: {gitcha.highest_lvl_education}\n\n'
 
     if gitcha.phone:
-        output += f' | Phone number: {gitcha.phone}'
+        output += f'Phone number: {gitcha.phone}\n\n'
 
     if gitcha.email:
-        output += f' | E-Mail: {gitcha.email}'
+        output += f'E-Mail: {gitcha.email}\n\n'
 
     if gitcha.address:
-        output += f' | Hometown address: {gitcha.address.street_address} {gitcha.address.city} {gitcha.address.country}'
+        output += f'Hometown address: {gitcha.address.street_address} {gitcha.address.city} {gitcha.address.country}'
 
     return output

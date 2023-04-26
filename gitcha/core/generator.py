@@ -375,7 +375,7 @@ class GitchaGenerator:
         prompts = self._prepare_prompt()
 
         human_template = """
-        Draft a letter of application for a job with the title '{job_title}'. 
+        Draft me a letter of application for a job with the title '{job_title}'. 
         
         My summarized curriculum vitae is:
 

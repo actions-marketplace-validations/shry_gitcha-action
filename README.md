@@ -33,7 +33,7 @@ family_name: Gates
 config:
   output_lang: English 
 #  public_folder: /public
-#  work_history_folder: /work_log
+#  work_history_folder: /work_history
 #  certs_folder: /certs
 #  projects_folder: /projects
 ```
@@ -42,7 +42,7 @@ To prevent wrong data injection gitcha only searchs for informations in:
 
 * README.md
 * `/public` - [config.public_folder]: All public files you want to distribute along your letter
-* `/work_log` - [config.work_history_folder]: Your work history (letter of reference etc.)
+* `/work_history` - [config.work_history_folder]: Your work history (letter of reference etc.)
 * `/certs` - [config.certs_folder]: Certificats you have earned
 * `/projects` - [config.projects_folder]: Interessting projects to know 
 
@@ -113,10 +113,11 @@ on:
 
 jobs:
   gitcha-job:
-    if: github.event.label.name == 'prompt'
+    if: github.event.label.name == 'question'
     runs-on: ubuntu-latest
     name: Ask me anything
     permissions:
+      contents: read
       issues: write
     steps:
       - name: Checkout
