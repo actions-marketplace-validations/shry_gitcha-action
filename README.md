@@ -1,6 +1,6 @@
 # Gitcha
 
-This Github Action generates a OpenAI answers based on the entire curriculum vitae files in your repository (PDFs, Docs, Markdown etc.)
+This Github Action generates OpenAI answers based on the entire curriculum vitae files in your repository (PDFs, Docs, Markdown etc.)
 
 ## Idea
 
@@ -11,23 +11,15 @@ Why not combine your CV repo with the power of (Open)AI?
 
 To use this action, you need a git repository with at least some files with personal information of you and an OpenAI API key.
 
-### Exmaple use case
+### Example use case
 
-Create a letter of application for a release you have created in GitHub:
+Create automatically a *letter of application* for a job:
 
-1. When you have found an interessting job position: Create a new release
+1. When you have found an interessting job position: Create a new GitHub release
 2. For the release title you should use the job title and for description the job description
 3. Save the release and wait a little bit. You will be notified when the magic has happend
 
-To prevent wrong data injection gitcha only searchs for informations in:
-
-* README.md
-* `/public` - [config.public_folder]: All public files you want to distribute along your letter
-* `/work_log` - [config.work_history_folder]: Your work history (letter of reference etc.)
-* `/certs` - [config.certs_folder]: Certificats you have earned
-* `/projects` - [config.projects_folder]: Interessting projects to know 
-
-INFO: Don't forget to add a GitHub action secret for the OpenAI API-Key called: `OPENAI_API_KEY`
+[Go to the workflow examples](#workflow-for-an-existing-repo)
 
 ## Config
 
@@ -46,6 +38,17 @@ config:
 #  projects_folder: /projects
 ```
 
+To prevent wrong data injection gitcha only searchs for informations in:
+
+* README.md
+* `/public` - [config.public_folder]: All public files you want to distribute along your letter
+* `/work_log` - [config.work_history_folder]: Your work history (letter of reference etc.)
+* `/certs` - [config.certs_folder]: Certificats you have earned
+* `/projects` - [config.projects_folder]: Interessting projects to know 
+
+INFO: Don't forget to add a GitHub action secret for the OpenAI API-Key called: `OPENAI_API_KEY`
+
+
 ### Language
 
 If you want to change the output language of your letter of applications, change the variable  `config.output_lang` in your `.gitcha.yml`.
@@ -53,7 +56,7 @@ If you want to change the output language of your letter of applications, change
 
 ## Template
 
-The easiest way to start is to use the gitcha template under: 
+The easiest way to start is to use the gitcha template under: [TBD]
 
 
 ## Workflow for an existing repo
@@ -130,7 +133,11 @@ jobs:
           
       - name: Your prompt answer
         run: echo "${{ steps.gitcha.outputs.answer }}"
-
+      - name: Add output as comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: ${{ steps.gitcha.outputs.answer }}
 ```
 
 
@@ -149,6 +156,6 @@ poetry install
 
 OPENAI_API_KEY=*** \
 GIT_FOLDER_PATH=/path/to/your/git/folder \
-GITCHA_JOB_SOURCE=folder \
+GITCHA_PROMPT="a question" \
 poetry run python gitcha/main.py
 ```
