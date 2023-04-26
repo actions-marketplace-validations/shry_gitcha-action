@@ -17,6 +17,7 @@ from langchain.llms import OpenAI
 from langchain.prompts.chat import (ChatPromptTemplate,
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
+from langchain.schema import BaseMessage
 from langchain.text_splitter import CharacterTextSplitter
 
 from .loader import GitchaDirectoryLoader
@@ -71,6 +72,9 @@ class GitchaGenerator:
 
         # The max_tokens here is por request
         self.llm = OpenAI(temperature=0.2, max_tokens=512)  # type: ignore
+
+        self.chat = ChatOpenAI(temperature=0.6, verbose=True,
+                               max_tokens=1000)  # type: ignore
 
     def _get_gitcha_config(self):
         """Get the gitcha dataclass
@@ -274,6 +278,35 @@ class GitchaGenerator:
             template='You are a personal job application assistant. The basic personal information of your client are the following: {personal_infos}'
         ), ]
 
+    def _execute_chat_prompt(self, messages: list[BaseMessage]) -> str:
+        """Execute the prompt messages in the chat 
+
+        Args:
+            messages (list[BaseMessage]): The prompt messages
+
+        Returns:
+            str: The output from OpenAI
+        """
+
+        print(f'Number of analyzed documents: {self.docs.total_files()}')
+
+        prompt_tokens = self.chat.get_num_tokens_from_messages(messages)
+        print(
+            f'Token estimation for final prompt: {prompt_tokens}')
+
+        total_limit = self.check_max_token_limit(prompt_tokens+1000)
+        print(
+            f'Maximum token prediction (prompt/completion): {total_limit} (Only a approximation)')
+
+        # Generate output
+        ai_resp = self.chat(messages=messages)
+
+        if not ai_resp.content:
+            raise GitchaGeneratorWarning(
+                'AI could not generate a valid output')
+
+        return ai_resp.content
+
     def check_max_token_limit(self, add: int = 0) -> int:
         """
         Simple prediction and check of the max token limit
@@ -339,9 +372,6 @@ class GitchaGenerator:
         if not self.repo.gitcha:
             raise ValueError('No gitcha config')
 
-        chat = ChatOpenAI(temperature=0.6, verbose=True,
-                          max_tokens=1000)  # type: ignore
-
         prompts = self._prepare_prompt()
 
         human_template = """
@@ -383,24 +413,7 @@ class GitchaGenerator:
             summary=summary
         ).to_messages()
 
-        print(f'Number of analyzed documents: {self.docs.total_files()}')
-
-        prompt_tokens = chat.get_num_tokens_from_messages(messages)
-        print(
-            f'Token estimation for final prompt: {prompt_tokens}')
-
-        total_limit = self.check_max_token_limit(prompt_tokens+1000)
-        print(
-            f'Maximum token prediction (prompt/completion): {total_limit} (Only a approximation)')
-
-        # Generate output
-        ai_resp = chat(messages=messages)
-
-        if not ai_resp.content:
-            raise GitchaGeneratorWarning(
-                'AI could not generate a valid output')
-
-        return ai_resp.content
+        return self._execute_chat_prompt(messages)
 
     def create_letter_of_application(self, create_release_assets: bool, stdout: bool = True) -> Optional[str]:
         """
@@ -416,14 +429,14 @@ class GitchaGenerator:
         job_data = self._get_job_source_from_folder()
 
         job_title, job_desc = os.environ.get(
-            'JOB_TITLE'), os.environ.get('JOB_DESC', '')
+            'GITCHA_JOB_TITLE'), os.environ.get('GITCHA_JOB_DESC', '')
 
         if job_title:
             job_data.append((job_title, job_desc, None))
 
         if not job_data:
             raise GitchaGeneratorError(
-                'Please provide at least a JOB_TITLE environment variable')
+                'Please provide at least a GITCHA_JOB_TITLE environment variable')
 
         return_output = None
 
@@ -472,9 +485,6 @@ class GitchaGenerator:
         if not self.repo.gitcha:
             raise ValueError('No gitcha config')
 
-        chat = ChatOpenAI(temperature=0.6, verbose=True,
-                          max_tokens=1000)  # type: ignore
-
         prompts = self._prepare_prompt()
 
         human_template = """
@@ -490,6 +500,11 @@ class GitchaGenerator:
         prompts.append(HumanMessagePromptTemplate.from_template(
             human_template))
 
+        if self.repo.gitcha.config:
+            prompts.append(SystemMessagePromptTemplate.from_template(
+                template=f'You should respond only in {self.repo.gitcha.config.output_lang.upper()}'
+            ))
+
         chat_prompt = ChatPromptTemplate.from_messages(prompts)
 
         # Generate messages
@@ -499,14 +514,7 @@ class GitchaGenerator:
             summary=summary
         ).to_messages()
 
-        # Generate output
-        ai_resp = chat(messages=messages)
-
-        if not ai_resp.content:
-            raise GitchaGeneratorWarning(
-                'AI could not generate a valid output')
-
-        return ai_resp.content
+        return self._execute_chat_prompt(messages)
 
     def create_general_prompt(self, prompt_text: Optional[str] = None, stdout: bool = True) -> Optional[str]:
         """

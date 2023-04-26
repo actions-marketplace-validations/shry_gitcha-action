@@ -1,6 +1,6 @@
 # Gitcha
 
-This Github Action generates a OpenAI generated letter of application based on the entire curriculum vitae files in your repository (PDFs, Docs, Markdown etc.)
+This Github Action generates a OpenAI answers based on the entire curriculum vitae files in your repository (PDFs, Docs, Markdown etc.)
 
 ## Idea
 
@@ -10,7 +10,10 @@ Why not combine your CV repo with the power of (Open)AI?
 ## Usage
 
 To use this action, you need a git repository with at least some files with personal information of you and an OpenAI API key.
-For GitHub we recommend you use the `release` workflow:
+
+### Exmaple use case
+
+Create a letter of application for a release you have created in GitHub:
 
 1. When you have found an interessting job position: Create a new release
 2. For the release title you should use the job title and for description the job description
@@ -55,7 +58,9 @@ The easiest way to start is to use the gitcha template under:
 
 ## Workflow for an existing repo
 
-If you want to add the GitHub action to an existing repo, you have to add new workflow file in `.github/workflows/`:
+If you want to add the GitHub action to an existing repo, you have to add new workflow file in `.github/workflows/`.
+
+### Letter of application after new release
 
 ```yaml
 name: Generate Letter of Application
@@ -83,8 +88,8 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: letter-of-application 
         env:
-          JOB_TITLE: ${{ github.event.release.name }}
-          JOB_DESC: ${{ github.event.release.description }}
+          GITCHA_JOB_TITLE: ${{ github.event.release.name }}
+          GITCHA_JOB_DESC: ${{ github.event.release.description }}
 
       - name: Your letter of application
         run: echo "${{ steps.gitcha.outputs.answer }}"
@@ -93,7 +98,7 @@ jobs:
 
 ### Issue prompts
 
-You could also use gitcha to ask general questions based on a issue you open:
+You could also use gitcha to ask general questions about your CV based on a issue you open:
 
 ```yaml
 name: Ask me anything
