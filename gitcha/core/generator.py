@@ -1,12 +1,14 @@
 """
 Class generator
 """
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess
 import tempfile
 from textwrap import dedent
-from typing import Literal, Optional
+from typing import Literal
 
 import frontmatter
 from github import Github
@@ -45,7 +47,7 @@ class GitchaGenerator:
     repo: RepoConfig
     git_provider: str
 
-    api: Optional[Github] = None
+    api: Github | None = None
 
     docs = ParsedDocs()
     max_token_limit: int
@@ -156,7 +158,7 @@ class GitchaGenerator:
         self.repo.release = self.get_lazy_repo().get_release(id=tag_name)
         return self.repo.release
 
-    def _get_job_source_from_folder(self) -> list[tuple[str, str, Optional[str]]]:
+    def _get_job_source_from_folder(self) -> list[tuple[str, str, str | None]]:
         """
         Get the job from a specific folder
         """
@@ -170,7 +172,7 @@ class GitchaGenerator:
         output = []
         for file in items:
             post = frontmatter.load(file)
-            title: Optional[str] = post.get('title')
+            title: str | None = post.get('title')
 
             # If there is already a created letter we will skip
             if post.get('created'):
@@ -240,7 +242,7 @@ class GitchaGenerator:
                 Direct download: {asset.browser_download_url}
             """))
 
-    def _create_comment(self, message: str, sha: Optional[str] = None):
+    def _create_comment(self, message: str, sha: str | None = None):
         """
         Create a message as a comment on github/gitlab
         """
@@ -323,7 +325,7 @@ class GitchaGenerator:
         api = self._init_api()
         return api.get_repo(self.repo.name, lazy=True)
 
-    def summarize_files(self, method: Literal['map_reduce', 'refine'] = 'refine') -> Optional[str]:
+    def summarize_files(self, method: Literal['map_reduce', 'refine'] = 'refine') -> str | None:
         """Create the summarization of all cv files
         """
         if self.docs.cv_summary:
@@ -402,7 +404,7 @@ class GitchaGenerator:
 
         return self._execute_chat_prompt(messages)
 
-    def create_letter_of_application(self, create_release_assets: bool, stdout: bool = True) -> Optional[str]:
+    def create_letter_of_application(self, create_release_assets: bool, stdout: bool = True) -> str | None:
         """
         Creates the letter of application in a temp directory as a Markdown file
 
@@ -503,7 +505,7 @@ class GitchaGenerator:
 
         return self._execute_chat_prompt(messages)
 
-    def answer(self, prompt_text: Optional[str] = None, stdout: bool = True) -> Optional[str]:
+    def answer(self, prompt_text: str | None = None, stdout: bool = True) -> str | None:
         """
         Execute a general prompt about the repo and return the answer
         """
