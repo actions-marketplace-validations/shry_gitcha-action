@@ -1,8 +1,8 @@
-name: 'Curriculum vitae'
+name: 'Gitcha AI'
 branding:
   icon: 'edit'
   color: 'green'
-description: 'Create a letter of application out of all the valid repo files'
+description: 'Generate OpenAI answers based on the entire curriculum vitae files in your repository (PDFs, Docs, Markdown etc.)'
 inputs:
   repo-token:
     description: 'GitHub repo token'
@@ -21,7 +21,7 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://ghcr.io/shry/gitcha-action:latest'
   env:
     OPENAI_API_KEY: ${{ inputs.open-ai-key }}
     GIT_PROVIDER_API_TOKEN: ${{ inputs.repo-token }}

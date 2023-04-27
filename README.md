@@ -83,7 +83,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Gitcha Action
-        uses: ./ # Uses an action in the root directory
+        uses: shry/gitcha-action@v1
         id: gitcha
         with:
           open-ai-key: ${{ secrets.OPENAI_API_KEY }}
@@ -122,7 +122,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Gitcha Action
-        uses: ./ # Uses an action in the root directory
+        uses: shry/gitcha-action@v1
         id: gitcha
         with:
           open-ai-key: ${{ secrets.OPENAI_API_KEY }}
