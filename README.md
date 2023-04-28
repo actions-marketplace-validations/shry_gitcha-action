@@ -28,6 +28,13 @@ In order to optimize the AI generated answers, we need a config file called `.gi
 ```yaml
 given_name: Bill # Only required field 
 family_name: Gates
+knows_language:
+  - English
+  - Spanish
+knows_coding: 
+  - Python
+  - Typescript
+# highest_lvl_education: PhD
 
 # Uncomment if you want to change the default settings
 config:

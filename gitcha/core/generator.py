@@ -372,7 +372,7 @@ class GitchaGenerator:
 
         {summary} 
 
-        Use around 150 words:
+        Use around 150 words.
         """
 
         if job_desc:
