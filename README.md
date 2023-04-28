@@ -48,7 +48,7 @@ config:
 To prevent wrong data injection gitcha only searches for informations in:
 
 * README.md
-* `/public` - [config.public_folder]: All public files you want to distribute along your letter
+* `/public` - [config.public_folder]: All public files you want to send in a application form for example
 * `/work_history` - [config.work_history_folder]: Your work history (letter of reference etc.)
 * `/certs` - [config.certs_folder]: Certificats you have earned
 * `/projects` - [config.projects_folder]: Interessting projects to know 
@@ -68,7 +68,7 @@ The easiest way to start is to use the gitcha template under: [TBD]
 
 ## Workflow for an existing repo
 
-If you want to add the GitHub action to an existing repo, you have to add a new workflow file in `.github/workflows/`.
+If you want to add the GitHub action to an existing repo, you have to add a new workflow yaml file in `.github/workflows/`.
 
 ### Letter of application after new release
 
@@ -107,7 +107,7 @@ jobs:
 
 ### Issue prompts
 
-You could also use gitcha to ask general questions about your CV based on a issue you open:
+You could also use gitcha to ask general questions about your CV based on a *question* issue you open:
 
 ```yaml
 name: Ask me anything
@@ -136,7 +136,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: prompt 
         env:
-          GITCHA_PROMPT: '${{ github.event.issue.title }}'
+          GITCHA_PROMPT: ${{ github.event.issue.title }}
           
       - name: Your prompt answer
         run: echo "${{ steps.gitcha.outputs.answer }}"
@@ -147,6 +147,7 @@ jobs:
           body: ${{ steps.gitcha.outputs.answer }}
 ```
 
+After creating the issue workflow. Create a new issue (for example: "What are my strongest skills?") and label it as a question.
 
 Besides that you always **need** to create a `.gitcha.yml` in your root folder.
 
@@ -163,6 +164,6 @@ poetry install
 
 OPENAI_API_KEY=*** \
 GIT_FOLDER_PATH=/path/to/your/git/folder \
-GITCHA_PROMPT="a question" \
+GITCHA_PROMPT="What are my strongest skills?" \
 poetry run python gitcha/main.py
 ```
