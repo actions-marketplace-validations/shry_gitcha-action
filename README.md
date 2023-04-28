@@ -4,7 +4,7 @@ This Github Action generates OpenAI answers based on the entire curriculum vitae
 
 ## Idea
 
-A lot of developers are using a git repo for managing there CV files, job history, certificates etc. 
+A lot of developers are using a git repo for managing their CV files, job history, certificates etc. 
 Why not combine your CV repo with the power of (Open)AI?
 
 ## Usage
